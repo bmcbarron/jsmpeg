@@ -6,8 +6,6 @@
 # Since we're compiling a side module here, so that we can load it without the
 # runtime cruft, we have to explicitly compile in support for malloc and
 # friends.
-# Note memcpy, memmove and memset are explicitly exported, otherwise they will
-# be eliminated by the SIDE_MODULE=2 setting - not sure why that happens.
 emcc \
 	src/wasm/mpeg1.c \
 	src/wasm/mp2.c \
@@ -24,9 +22,6 @@ emcc \
 	-s NO_FILESYSTEM=1 \
 	-s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE="[]" \
 	-s "EXPORTED_FUNCTIONS=[
-		'_memcpy',
-		'_memmove',
-		'_memset',
 		'_mpeg1_decoder_create',
 		'_mpeg1_decoder_destroy',
 		'_mpeg1_decoder_get_write_ptr',

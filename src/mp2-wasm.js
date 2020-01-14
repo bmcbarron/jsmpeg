@@ -27,28 +27,28 @@ MP2WASM.prototype.initializeWasmDecoder = function() {
 	}
 	this.instance = this.module.instance;
 	this.functions = this.module.instance.exports;
-	this.decoder = this.functions._mp2_decoder_create(this.bufferSize, this.bufferMode);
+	this.decoder = this.functions.mp2_decoder_create(this.bufferSize, this.bufferMode);
 };
 
 MP2WASM.prototype.destroy = function() {
 	if (!this.decoder) {
 		return;
 	}
-	this.functions._mp2_decoder_destroy(this.decoder);
+	this.functions.mp2_decoder_destroy(this.decoder);
 };
 
 MP2WASM.prototype.bufferGetIndex = function() {
 	if (!this.decoder) {
 		return;
 	}
-	return this.functions._mp2_decoder_get_index(this.decoder);
+	return this.functions.mp2_decoder_get_index(this.decoder);
 };
 
 MP2WASM.prototype.bufferSetIndex = function(index) {
 	if (!this.decoder) {
 		return;
 	}
-	this.functions._mp2_decoder_set_index(this.decoder, index);
+	this.functions.mp2_decoder_set_index(this.decoder, index);
 };
 
 MP2WASM.prototype.bufferWrite = function(buffers) {
@@ -61,13 +61,13 @@ MP2WASM.prototype.bufferWrite = function(buffers) {
 		totalLength += buffers[i].length;
 	}
 
-	var ptr = this.functions._mp2_decoder_get_write_ptr(this.decoder, totalLength);
+	var ptr = this.functions.mp2_decoder_get_write_ptr(this.decoder, totalLength);
 	for (var i = 0; i < buffers.length; i++) {
 		this.instance.heapU8.set(buffers[i], ptr);
 		ptr += buffers[i].length;
 	}
 	
-	this.functions._mp2_decoder_did_write(this.decoder, totalLength);
+	this.functions.mp2_decoder_did_write(this.decoder, totalLength);
 	return totalLength;
 };
 
@@ -78,19 +78,19 @@ MP2WASM.prototype.decode = function() {
 		return false;
 	}	
 
-	var decodedBytes = this.functions._mp2_decoder_decode(this.decoder);
+	var decodedBytes = this.functions.mp2_decoder_decode(this.decoder);
 	if (decodedBytes === 0) {
 		return false;
 	}
 
 	if (!this.sampleRate) {
-		this.sampleRate = this.functions._mp2_decoder_get_sample_rate(this.decoder);
+		this.sampleRate = this.functions.mp2_decoder_get_sample_rate(this.decoder);
 	}
 
 	if (this.destination) {
 		// Create a Float32 View into the modules output channel data
-		var leftPtr = this.functions._mp2_decoder_get_left_channel_ptr(this.decoder),
-			rightPtr = this.functions._mp2_decoder_get_right_channel_ptr(this.decoder);
+		var leftPtr = this.functions.mp2_decoder_get_left_channel_ptr(this.decoder),
+			rightPtr = this.functions.mp2_decoder_get_right_channel_ptr(this.decoder);
 
 		var leftOffset = leftPtr / Float32Array.BYTES_PER_ELEMENT,
 			rightOffset = rightPtr / Float32Array.BYTES_PER_ELEMENT;

@@ -25,28 +25,28 @@ MPEG1WASM.prototype.initializeWasmDecoder = function() {
 	}
 	this.instance = this.module.instance;
 	this.functions = this.module.instance.exports;
-	this.decoder = this.functions._mpeg1_decoder_create(this.bufferSize, this.bufferMode);
+	this.decoder = this.functions.mpeg1_decoder_create(this.bufferSize, this.bufferMode);
 };
 
 MPEG1WASM.prototype.destroy = function() {
 	if (!this.decoder) {
 		return;
 	}
-	this.functions._mpeg1_decoder_destroy(this.decoder);
+	this.functions.mpeg1_decoder_destroy(this.decoder);
 };
 
 MPEG1WASM.prototype.bufferGetIndex = function() {
 	if (!this.decoder) {
 		return;
 	}
-	return this.functions._mpeg1_decoder_get_index(this.decoder);
+	return this.functions.mpeg1_decoder_get_index(this.decoder);
 };
 
 MPEG1WASM.prototype.bufferSetIndex = function(index) {
 	if (!this.decoder) {
 		return;
 	}
-	this.functions._mpeg1_decoder_set_index(this.decoder, index);
+	this.functions.mpeg1_decoder_set_index(this.decoder, index);
 };
 
 MPEG1WASM.prototype.bufferWrite = function(buffers) {
@@ -59,32 +59,32 @@ MPEG1WASM.prototype.bufferWrite = function(buffers) {
 		totalLength += buffers[i].length;
 	}
 
-	var ptr = this.functions._mpeg1_decoder_get_write_ptr(this.decoder, totalLength);
+	var ptr = this.functions.mpeg1_decoder_get_write_ptr(this.decoder, totalLength);
 	for (var i = 0; i < buffers.length; i++) {
 		this.instance.heapU8.set(buffers[i], ptr);
 		ptr += buffers[i].length;
 	}
 	
-	this.functions._mpeg1_decoder_did_write(this.decoder, totalLength);
+	this.functions.mpeg1_decoder_did_write(this.decoder, totalLength);
 	return totalLength;
 };
 
 MPEG1WASM.prototype.write = function(pts, buffers) {
 	JSMpeg.Decoder.Base.prototype.write.call(this, pts, buffers);
 
-	if (!this.hasSequenceHeader && this.functions._mpeg1_decoder_has_sequence_header(this.decoder)) {
+	if (!this.hasSequenceHeader && this.functions.mpeg1_decoder_has_sequence_header(this.decoder)) {
 		this.loadSequnceHeader();
 	}
 };
 
 MPEG1WASM.prototype.loadSequnceHeader = function() {
 	this.hasSequenceHeader = true;
-	this.frameRate = this.functions._mpeg1_decoder_get_frame_rate(this.decoder);
-	this.codedSize = this.functions._mpeg1_decoder_get_coded_size(this.decoder);
+	this.frameRate = this.functions.mpeg1_decoder_get_frame_rate(this.decoder);
+	this.codedSize = this.functions.mpeg1_decoder_get_coded_size(this.decoder);
 
 	if (this.destination) {
-		var w = this.functions._mpeg1_decoder_get_width(this.decoder);
-		var h = this.functions._mpeg1_decoder_get_height(this.decoder);
+		var w = this.functions.mpeg1_decoder_get_width(this.decoder);
+		var h = this.functions.mpeg1_decoder_get_height(this.decoder);
 		this.destination.resize(w, h);
 	}
 
@@ -100,16 +100,16 @@ MPEG1WASM.prototype.decode = function() {
 		return false;
 	}
 
-	var didDecode = this.functions._mpeg1_decoder_decode(this.decoder);
+	var didDecode = this.functions.mpeg1_decoder_decode(this.decoder);
 	if (!didDecode) {
 		return false;
 	}
 
 	// Invoke decode callbacks
 	if (this.destination) {
-		var ptrY = this.functions._mpeg1_decoder_get_y_ptr(this.decoder),
-			ptrCr = this.functions._mpeg1_decoder_get_cr_ptr(this.decoder),
-			ptrCb = this.functions._mpeg1_decoder_get_cb_ptr(this.decoder);
+		var ptrY = this.functions.mpeg1_decoder_get_y_ptr(this.decoder),
+			ptrCr = this.functions.mpeg1_decoder_get_cr_ptr(this.decoder),
+			ptrCb = this.functions.mpeg1_decoder_get_cb_ptr(this.decoder);
 
 		var dy = this.instance.heapU8.subarray(ptrY, ptrY + this.codedSize);
 		var dcr = this.instance.heapU8.subarray(ptrCr, ptrCr + (this.codedSize >> 2));

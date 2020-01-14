@@ -2,6 +2,7 @@ JSMpeg.WASMModule = (function(){ "use strict";
 
 var WASM = function() {
 	this.stackSize = 5 * 1024 * 1024; // emscripten default
+	this.stackTop = this.stackSize;
 	this.pageSize = 64 * 1024; // wasm page size
 	this.onInitCallback = null;
 	this.ready = false;
@@ -34,8 +35,10 @@ WASM.prototype.loadFromBuffer = function(buffer, callback) {
 		tableBase: 0,
 		__table_base: 0,
 		abort: this.c_abort.bind(this),
-		___assert_fail: this.c_assertFail.bind(this),
-		_sbrk: this.c_sbrk.bind(this)
+		__assert_fail: this.c_assertFail.bind(this),
+		sbrk: this.c_sbrk.bind(this),
+		stackSave: function() { return this.stackTop|0; }.bind(this),
+		stackRestore: function(top) { top = top|0; this.stackTop = top; }.bind(this),
 	};
 
 	this.brk = this.align(this.moduleInfo.memorySize + this.stackSize);
@@ -117,8 +120,6 @@ WASM.prototype.readDylinkSection = function(buffer) {
 		}
 		return true;
 	};
-
-	
 
 	// Make sure we have a wasm header
 	if (!matchNextBytes([0, 'a', 's', 'm'])) {
