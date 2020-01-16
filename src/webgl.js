@@ -10,7 +10,7 @@ var WebGLRenderer = function(options) {
 
 	var contextCreateOptions = {
 		preserveDrawingBuffer: !!options.preserveDrawingBuffer,
-		alpha: false,
+		alpha: options.alpha || false,
 		depth: false,
 		stencil: false,
 		antialias: false,
